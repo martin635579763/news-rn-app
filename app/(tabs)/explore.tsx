@@ -1,102 +1,102 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Colors } from "@/constants/Colors";
+import SearchBar from "@/components/SearchBar";
+import newsCategoryList from "@/constants/Categories";
+import CheckBox from "@/components/CheckBox";
+import { useNewsCategories } from "../hooks/useNewsCategories";
+import { useNewsCountries } from "../hooks/useNewsCountries";
+import { Link } from "expo-router";
 
-export default function TabTwoScreen() {
+const explore = () => {
+  const { top: safeTop } = useSafeAreaInsets();
+  const { newsCategories, toggleNewsCategory } = useNewsCategories();
+  const { newsCountries, toggleNewsCountries } = useNewsCountries();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [category, setCategory] = useState("");
+  const [country, setCountry] = useState("");
+
+  
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={<Ionicons size={310} name="code-slash" style={styles.headerImage} />}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText> library
-          to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={[styles.container, { paddingTop: safeTop + 20 }]}>
+      <SearchBar
+        withHorizontalPadding={false}
+        setSearchQuery={setSearchQuery}
+      />
+      <Text style={styles.title}>Categories</Text>
+      <View style={styles.listContainer}>
+        {newsCategories.map((item) => (
+          <CheckBox
+            key={item.id}
+            label={item.title}
+            checked={item.selected}
+            onPress={() => {
+              toggleNewsCategory(item.id);
+              setCategory(item.slug);
+            }}
+          />
+        ))}
+      </View>
+
+      <Text style={styles.title}>Countries</Text>
+      <View style={styles.listContainer}>
+        {newsCountries.map((item, index) => (
+          <CheckBox
+            key={index}
+            label={item.name}
+            checked={item.selected}
+            onPress={() => {
+              toggleNewsCountries(index);
+              setCountry(item.code);
+            }}
+          />
+        ))}
+      </View>
+      <Link href={{
+        pathname: `/news/search`,
+        params: {query: searchQuery, category, country}
+        }} asChild>
+        <TouchableOpacity style={styles.searchBtn} onPress={() => {}}>
+          <Text style={styles.searchBtnTxt}>Search</Text>
+        </TouchableOpacity>
+      </Link>
+    </View>
   );
-}
+};
+
+export default explore;
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: Colors.black,
+    marginBottom: 10,
+  },
+  listContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 12,
+    marginBottom: 20,
+  },
+  searchBtn: {
+    backgroundColor: Colors.tint,
+    alignItems: "center",
+    padding: 14,
+    borderRadius: 10,
+    marginVertical: 10,
+  },
+  searchBtnTxt: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
